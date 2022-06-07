@@ -26,11 +26,29 @@ function timeToString(duration) {
 function outOfTime() {
   if (counterInterval) return;
   E.showMessage("Out of Time", "My Timer");
-  Bangle.buzz();
-  Bangle.beep(200, 4000)
-    .then(() => new Promise(resolve => setTimeout(resolve,200)))
-    .then(() => Bangle.beep(200, 3000));
-  // again, 10 secs later
+  Bangle.buzz().then(()=>{
+    return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+  }).then(()=>{
+    return Bangle.buzz().then(()=>{
+      return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+    })
+  }).then(()=>{
+    return Bangle.buzz().then(()=>{
+      return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+    })
+  }).then(()=>{
+    return Bangle.buzz().then(()=>{
+      return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+    })
+  }).then(()=>{
+    return Bangle.buzz().then(()=>{
+      return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+    })
+  }).then(()=>{
+    return Bangle.buzz(1000);
+  }).then(()=>{
+    console.log("Done");
+  });
   setTimeout(outOfTime, 10000);
 }
 
@@ -56,11 +74,28 @@ function countDown() {
     if (counter >= Math.floor(steps[currentStep] * total / INITIAL_TOTAL)) {
       E.showMessage("" + timeToString(steps[currentStep]), "PROGRESS");
       currentStep++;
-      Bangle.buzz();
-      Bangle.beep(200, 4000)
-        .then(() => new Promise(resolve => setTimeout(resolve,200)))
-        .then(() => Bangle.beep(200, 3000));
-        }
+      if (currentStep < steps.length-1) {
+        Bangle.buzz().then(()=>{
+          return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+        }).then(()=>{
+          return Bangle.buzz(1000);
+        }).then(()=>{
+          console.log("step");
+        });
+      } else {
+        Bangle.buzz().then(()=>{
+          return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+        }).then(()=>{
+          return Bangle.buzz().then(()=>{
+            return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+          })
+        }).then(()=>{
+          return Bangle.buzz(1000);
+        }).then(()=>{
+          console.log("final step");
+        });
+      }
+    }
   }
 
   // Out of time
