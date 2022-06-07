@@ -23,33 +23,56 @@ function timeToString(duration) {
 }
 
 
+
+function shortBuzz() {
+  console.log('short buzz');
+  return Bangle.buzz();
+}
+
+function longBuzz() {
+  console.log('long buzz');
+  return Bangle.buzz(1000);
+}
+
+
+function buzz(numShort, numLong) {
+  // var b = shortBuzz;
+  // if (numShort<=0) {
+  //   b= longBuzz;
+  // }
+  // b().then(() => {
+  var p;
+  if (numShort>0) {
+    p = shortBuzz();
+  } else {
+    p = longBuzz();
+  }
+  p.then(() => {
+    console.log({numShort: numShort, numLong: numLong});
+    numShort--;
+    if (numShort < 0) {
+      numLong--;
+      if (numLong <= 0) {
+        console.log("no long");
+        return;
+      }
+    }
+
+    console.log("...");
+    (new Promise(resolve=>setTimeout(resolve,500))).then(() => {
+      console.log("buzz again");
+      buzz(numShort, numLong);
+    });
+  });  
+}
+
+
+
 function outOfTime() {
   if (counterInterval) return;
   E.showMessage("Out of Time", "My Timer");
-  Bangle.buzz().then(()=>{
-    return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
-  }).then(()=>{
-    return Bangle.buzz().then(()=>{
-      return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
-    })
-  }).then(()=>{
-    return Bangle.buzz().then(()=>{
-      return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
-    })
-  }).then(()=>{
-    return Bangle.buzz().then(()=>{
-      return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
-    })
-  }).then(()=>{
-    return Bangle.buzz().then(()=>{
-      return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
-    })
-  }).then(()=>{
-    return Bangle.buzz(1000);
-  }).then(()=>{
-    console.log("Done");
-  });
-  setTimeout(outOfTime, 10000);
+  buzz(steps.length,4);
+  //setTimeout(outOfTime, 10000);
 }
 
 function countDown() {
@@ -75,25 +98,9 @@ function countDown() {
       E.showMessage("" + timeToString(steps[currentStep]), "PROGRESS");
       currentStep++;
       if (currentStep < steps.length-1) {
-        Bangle.buzz().then(()=>{
-          return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
-        }).then(()=>{
-          return Bangle.buzz(1000);
-        }).then(()=>{
-          console.log("step");
-        });
+        buzz(currentStep, 1);
       } else {
-        Bangle.buzz().then(()=>{
-          return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
-        }).then(()=>{
-          return Bangle.buzz().then(()=>{
-            return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
-          })
-        }).then(()=>{
-          return Bangle.buzz(1000);
-        }).then(()=>{
-          console.log("final step");
-        });
+        buzz(currentStep, 3);
       }
     }
   }
@@ -110,6 +117,7 @@ function countDown() {
 }
 
 function startTimer() {
+  setWatch(startTimer, (process.env.HWVERSION==2) ? BTN1 : BTN2)
   counter = 0;
   countDown();
   if (!counterInterval)
@@ -130,12 +138,14 @@ function drawTotal() {
 
 Bangle.on('touch', function(zone,e) {
   console.log("touched")
-  totalIndex++;
-  if (totalIndex >= totalList.length) {
-    totalIndex = 0;
+  if (!counterInterval) {
+    totalIndex++;
+    if (totalIndex >= totalList.length) {
+      totalIndex = 0;
+    }
+    total = totalList[totalIndex];
+    drawTotal();
   }
-  total = totalList[totalIndex];
-  drawTotal();
 });
 
 drawTotal();
